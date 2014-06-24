@@ -1,7 +1,18 @@
-Role Name
-========
+supervisord
+===========
 
 Install & configure Supervisor.
+This role provides it's own Upstart init script, and can install it for each supervised application.
+It will also deactivate the distro's one (configurable with supervisord_enable_distro_init).
+
+
+Requirements
+------------
+
+Static ansible_managed.
+    This role uses the ``ansible_managed`` variable. If you set it to something dynamic (or left the default), you should pass a static one into this role - otherwise you'll see unnecessary restarts.
+
+
 
 Role Variables
 --------------
@@ -16,9 +27,14 @@ This name will be used in default paths and for init script names.
 If you need multiple supervisor daemons, that's how they are told apart.
 
 
+    supervisord_configuration_file: "/etc/supervisord-{{ supervisord_instance_name }}.conf"
+
+Where to put this instance's configuration.
+
+
     supervisord_logfile: "/var/log/supervisor/{{ supervisord_instance_name }}.log"
 
-Main log file settings: location, maximum size before rotating it, and maximum amount of rotated copies that'll be kept.
+Main log file location.
 
 
     supervisord_user: no
@@ -42,11 +58,16 @@ Identifier for use in RPC communication.
 Programs this instance should supervise. List of dictionaries, fields used here are described in Program Definition section.
 
 
+    supervisord_disable_distro_init: yes
+
+Should the distribution-provided init script be turned off? This will also stop the instance managed by that script.
+
+
     supervisord_extra_config: {}
 
 Additional configuration for supervisord.
 It's a dictionary mapping section name to a dictionary mapping options to values, for example: ``{ inet_http_server: { port: 9001 } }``.
-If some option is also used by this role, it will be overridden (so be careful).
+If some option is also set by this role, it might show up twice (so be careful).
 
 
 Program Definition
@@ -54,7 +75,8 @@ Program Definition
 
 Each element of supervisord_programs defines a process group.
 The full list of settings is at: http://supervisord.org/configuration.html#program-x-section-values.
-Most settings are just written into the file (with some care for booleans and numbers), this lists only includes the special ones.
+Most settings are just written into the file (with some care for booleans), this lists only includes the special ones.
+
 
     name: No default, required
 
@@ -76,6 +98,34 @@ Setting this will generate an fcgi-program:{{ name }} instead of program:{{ name
     environment: {}
 
 Additional environment variables for this process group. For format see supervisord_environemt in Role Variables.
+
+
+Handlers
+--------
+
+This role exports following handlers:
+
+    restart {{ supervisord_instance_name }}
+
+Restarts the whole supervisord process.
+
+    reload {{ supervisord_instance_name }}
+
+Reloads supervisord configuration.
+
+
+Using as a role dependency
+--------------------------
+
+When using this role as a dependency, you'll probably want to pass your role's name as supervisord_instance_name and use something like this for handlers:
+
+    - name: Restart my web workers
+      supervisorctl:
+        name: my_app-web
+        state: restarted
+        config: "{{ supervisord_configuration_file }}"
+
+TODO: shortcut for this
 
 
 Example Playbook

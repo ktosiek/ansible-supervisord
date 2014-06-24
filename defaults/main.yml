@@ -1,2 +1,10 @@
----
-# defaults file for supervisord
+# For description of those options see README.md
+supervisord_instance_name: "default"
+supervisord_configuration_file: "/etc/supervisord-{{ supervisord_instance_name }}.conf"
+supervisord_logfile: "/var/log/supervisor/{{ supervisord_instance_name }}.log"
+supervisord_user: no
+supervisord_environemt: {}
+supervisord_identifier: "{{ supervisord_instance_name }}"
+supervisord_programs: []
+supervisord_disable_distro_init: yes
+supervisord_extra_config: {}

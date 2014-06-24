@@ -1,0 +1,64 @@
+; {{ ansible_managed }}
+{# This will be used to remember which sections were generated already #}
+{% set _managed_sections = [] -%}
+{%- macro value_pairs(values) %}{# Generate option=value mappings from a dict #}
+{%- for option, value
+   in values.items() %}
+{### Bools need special handling, anything else goes in as-is ###}
+{% if value in [True, False] %}
+{{ option }}={{ 'true' if value else 'false' }}
+{% else %}
+{{ option }}={{ value }}
+{% endif %}
+{% endfor %}
+{% endmacro %}
+
+{%- macro section(section_title) %}
+{# Generate a section with header, body from caller(), #}
+{# and additional options from supervisord_extra_config #}
+{% set _ = _managed_sections.append(section_title) %}
+[{{ section_title }}]
+{{ caller() }}
+{{- value_pairs(supervisord_extra_config[section_title] | default({})) }}
+{%- endmacro %}
+
+{% call section("unix_http_server") %}
+; (the path to the socket file)
+file=/var/run/supervisor-{{ supervisord_instance_name }}.sock
+chmod=0700                       ; socket file mode (default 0700)
+{% endcall %}
+
+{% call section("supervisord") %}
+; (main log file;default $CWD/supervisord.log)
+logfile={{ supervisord_logfile }}
+; (supervisord pidfile;default supervisord.pid)
+pidfile=/var/run/supervisord-{{ supervisord_instance_name }}.pid
+; ('AUTO' child log dir, default $TEMP)
+childlogdir=/var/log/supervisor-{{ supervisord_instance_name }}
+{% endcall %}
+
+{% call section("rpcinterface:supervisor") %}
+; the below section must remain in the config file for RPC
+; (supervisorctl/web interface) to work, additional interfaces may be
+; added by defining them in separate rpcinterface: sections
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+{% endcall %}
+
+{% call section("supervisorctl") %}
+; use a unix:// URL  for a unix socket
+serverurl=unix:///var/run/supervisor-{{ supervisord_instance_name }}.sock
+{% endcall %}
+
+{%- for program in supervisord_programs %}
+{% set _program_kind = 'fcgi-program' if program.socket | default(False)
+                       else 'program' %}
+
+{% call section(_program_kind ~ ":" ~ program.name) %}
+{{ value_pairs(program) -}}
+{% endcall %}
+{% endfor %}
+
+{%- for section_name in supervisord_extra_config.keys() | difference(_managed_sections) %}
+
+{% call section(section_name) %}{% endcall %}
+{% endfor %}

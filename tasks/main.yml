@@ -1,2 +1,22 @@
----
-# tasks file for supervisord
+- name: Install Supervisor
+  apt: name=supervisor
+
+- name: Stop supervisor and disable the default init script
+  service: name=supervisor enabled=no state=stopped
+  when: supervisord_disable_distro_init | bool
+
+- name: Prepare the log dir
+  file: dest=/var/log/supervisor-{{ supervisord_instance_name }} state=directory
+
+- name: Create init script
+  template: src=upstart.j2 dest=/etc/init/{{ supervisord_instance_name }}.conf
+  notify:
+    - restart {{ supervisord_instance_name }}
+
+- name: Create configuration
+  template: src=supervisord.conf.j2 dest={{ supervisord_configuration_file }}
+  notify:
+    - reload {{ supervisord_instance_name }}
+
+- name: Start {{ supervisord_instance_name }} with system
+  service: name={{ supervisord_instance_name }} state=started enabled=yes
