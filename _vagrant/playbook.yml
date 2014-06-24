@@ -1,0 +1,31 @@
+- hosts: all
+  sudo: yes
+  vars:
+    supervisord_instance_name: "example"
+    supervisord_programs:
+      - name: example_daemon
+        command: nc -l 1025
+    supervisord_extra_config:
+      blah:
+        asdf: ghjkl
+      "program:example_daemon":
+        name: no
+      unix_http_server:
+        dummy: "OMGWTF"
+  roles:
+  - role: supervisord
+  post_tasks:
+    - debug: var=supervisord_configuration_file
+    - supervisorctl:
+        config: "{{ supervisord_configuration_file }}"
+        name: example_daemon
+        state: started
+    - name: Stop the service
+      shell: echo "bye bye" | nc localhost 1025
+    - supervisorctl:
+        config: "{{ supervisord_configuration_file }}"
+        name: example_daemon
+        state: started
+
+
+# TODO: test fcgi
