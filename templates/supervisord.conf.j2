@@ -25,7 +25,6 @@
 {% call section("unix_http_server") %}
 ; (the path to the socket file)
 file=/var/run/supervisor-{{ supervisord_instance_name }}.sock
-chmod=0700                       ; socket file mode (default 0700)
 {% endcall %}
 
 {% call section("supervisord") %}

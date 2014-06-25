@@ -11,6 +11,7 @@
       "program:example_daemon":
         name: no
       unix_http_server:
+        chmod: '0777'
         dummy: "OMGWTF"
 
   roles:
