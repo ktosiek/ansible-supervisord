@@ -12,16 +12,23 @@
         name: no
       unix_http_server:
         dummy: "OMGWTF"
+
   roles:
   - role: supervisord
+
   post_tasks:
-    - debug: var=supervisord_configuration_file
     - supervisorctl:
         config: "{{ supervisord_configuration_file }}"
         name: example_daemon
         state: started
+      register: r
+      retries: 5
+      delay: 1
+      until: r.state | default(none) == 'started'
+
     - name: Stop the service
       shell: echo "bye bye" | nc localhost 1025
+
     - supervisorctl:
         config: "{{ supervisord_configuration_file }}"
         name: example_daemon

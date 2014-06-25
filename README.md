@@ -125,6 +125,11 @@ When using this role as a dependency, you'll probably want to pass your role's n
         state: restarted
         config: "{{ supervisord_configuration_file }}"
 
+One warning though - if you use supervisorctl with state=started just after reloaading/restarting supervisord
+it might throw strange looking errors like ``ERROR (already started)``.
+This looks like a bug in supervisorctl module, for a workaround see _vagrant/playbook.yml
+
+TODO: link to a bug report
 TODO: shortcut for this
 
 
