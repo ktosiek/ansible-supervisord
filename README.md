@@ -42,7 +42,7 @@ Main log file location.
 Run supervisord as this user.
 
 
-    supervisord_environemt: {}
+    supervisord_environment: {}
 
 Environment for supervisord and all children.
 This can have 2 forms, either a string (that will be put literally into config file) or a dictionary of variable: value.
@@ -97,7 +97,7 @@ Setting this will generate an fcgi-program:{{ name }} instead of program:{{ name
 
     environment: {}
 
-Additional environment variables for this process group. For format see supervisord_environemt in Role Variables.
+Additional environment variables for this process group. For format see supervisord_environment in Role Variables.
 
 
 Handlers

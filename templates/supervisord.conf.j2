@@ -1,11 +1,16 @@
 ; {{ ansible_managed }}
 {# This will be used to remember which sections were generated already #}
 {% set _managed_sections = [] -%}
-{%- macro value_pairs(values) %}{# Generate option=value mappings from a dict #}
+
+
+{%- macro value_pairs(values, ignore=[]) %}
+{#- Generate option=value mappings from a dict -#}
 {%- for option, value
    in values.items() %}
-{### Bools need special handling, anything else goes in as-is ###}
-{% if value in [True, False] %}
+{% if option in ignore %}
+  {#- Ignored keys -#}
+{% elif value in [True, False] %}
+  {#- Bools need special handling, anything else goes in as-is -#}
 {{ option }}={{ 'true' if value else 'false' }}
 {% else %}
 {{ option }}={{ value }}
@@ -22,6 +27,17 @@
 {{- value_pairs(supervisord_extra_config[section_title] | default({})) }}
 {%- endmacro %}
 
+{%- macro build_environment(environment) -%}
+{% if environment is mapping %}
+  {%- for k, v in environment.items() -%}
+    {{- k }}="{{ v | replace('\\', '\\\\') | replace('"', '\\"') }}"
+    {%- if not loop.last %},{% endif -%}
+  {%- endfor -%}
+{% else %}
+  {{- environment -}}
+{% endif %}
+{%- endmacro %}
+
 {% call section("unix_http_server") %}
 ; (the path to the socket file)
 file=/var/run/supervisor-{{ supervisord_instance_name }}.sock
@@ -34,6 +50,9 @@ logfile={{ supervisord_logfile }}
 pidfile=/var/run/supervisord-{{ supervisord_instance_name }}.pid
 ; ('AUTO' child log dir, default $TEMP)
 childlogdir=/var/log/supervisor-{{ supervisord_instance_name }}
+{% if supervisord_environment %}
+environment={{ build_environment(supervisord_environment) }}
+{% endif %}
 {% endcall %}
 
 {% call section("rpcinterface:supervisor") %}
@@ -53,7 +72,10 @@ serverurl=unix:///var/run/supervisor-{{ supervisord_instance_name }}.sock
                        else 'program' %}
 
 {% call section(_program_kind ~ ":" ~ program.name) %}
-{{ value_pairs(program) -}}
+{{ value_pairs(program, ignore=['environment']) -}}
+{% if 'environment' in program %}
+environment={{ build_environment(program.environment) }}
+{% endif %}
 {% endcall %}
 {% endfor %}
 
