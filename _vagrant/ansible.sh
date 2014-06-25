@@ -8,7 +8,6 @@ ARGS=(
     -i "$DIR/.vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory"
     --private-key=~/.vagrant.d/insecure_private_key
     -u vagrant
-    -e ansible_sudo_password=vagrant
 )
 
 ansible "${ARGS[@]}" "${@}"
