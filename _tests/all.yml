@@ -1,0 +1,47 @@
+- hosts: all
+  vars:
+    supervisord_instance_name: "test"
+    supervisord_programs:
+      - name: fcgi_daemon
+        socket: unix:///var/run/fcgi.socket
+        command: nc -l 1025
+        environment:
+          PATH: /bin
+
+      - name: http
+        command: python -m SimpleHTTPServer 1026
+    supervisord_extra_config:
+      "program:http":
+        directory: /var/lib/test
+      unix_http_server:
+        chmod: '0777'
+
+  pre_tasks:
+  - name: Prepare directory to serve
+    file: dest=/var/lib/test state=directory
+  - name: Prepare a file to serve
+    copy: content="hello\n" dest=/var/lib/test/file
+
+  roles:
+  - role: supervisord
+
+  post_tasks:
+    - meta: flush_handlers
+    - wait_for: port=1026
+
+    # Make sure both programs are seen as started
+    - supervisorctl:
+        config: "{{ supervisord_configuration_file }}"
+        name: "{{ item }}"
+        state: started
+      with_items:
+        - http
+        - example_daemon
+
+    # Download a file from HTTP server
+    - uri: url=http://localhost:1026/file return_content=yes
+      register: hello_file
+    - assert: that='"hello" in hello_file.content'
+
+    # Check if fcgi socket was created
+    - file: path=/var/run/fcgi.socket state=file
