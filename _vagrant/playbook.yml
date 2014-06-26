@@ -7,7 +7,6 @@
         command: nc -l 1025
         environment:
           PATH: /bin
-          TEST: It's "leviosA"
     supervisord_extra_config:
       blah:
         asdf: ghjkl
