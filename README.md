@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ktosiek/ansible-supervisord.svg?branch=master)](https://travis-ci.org/ktosiek/ansible-supervisord)
+
 supervisord
 ===========
 
