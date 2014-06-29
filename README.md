@@ -9,8 +9,9 @@ It will also deactivate the distro's one (configurable with supervisord_enable_d
 Requirements
 ------------
 
-Static ansible_managed.
-    This role uses the ``ansible_managed`` variable. If you set it to something dynamic (or left the default), you should pass a static one into this role - otherwise you'll see unnecessary restarts.
+    Pretty static ansible_managed.
+
+This role uses the ``ansible_managed`` variable. If you set it to something dynamic (or left the default), you should pass a static one into this role - otherwise you'll see unnecessary restarts.
 
 
 
@@ -18,12 +19,13 @@ Role Variables
 --------------
 
 None of them are required, but you probably want to set ``supervisord_programs`` and ``supervisord_instance_name``.
+
 **Escape warning**: most options need "%" escaped as "%%", as supervisord uses %(var_name)s for variable substitution.
 
 
     supervisord_instance_name: "default"
 
-This name will be used in default paths and for init script names (this will be the name of the created system service).
+This name will be used in default paths, and for init script names (this will be the name of the created system service).
 If you need multiple supervisor daemons, that's how they are told apart.
 
 
@@ -40,6 +42,7 @@ Main log file location.
     supervisord_user: no
 
 Run supervisord as this user.
+This is set at supervisord level, not upstart level.
 
 
     supervisord_kill_timeout: 60
@@ -72,7 +75,8 @@ Should the distribution-provided init script be turned off? This will also stop 
 
 Additional configuration for supervisord.
 It's a dictionary mapping section name to a dictionary mapping options to values, for example: ``{ inet_http_server: { port: 9001 } }``.
-If some option is also set by this role, it might show up twice (so be careful).
+If some option is also set by this role, it might show up twice (so be careful),
+but sections won't be duplicated.
 
 
 Program Definition
@@ -132,10 +136,9 @@ When using this role as a dependency, you'll probably want to pass your role's n
 
 One warning though - if you use supervisorctl with state=started just after reloaading/restarting supervisord
 it might throw strange looking errors like ``ERROR (already started)``.
-This looks like a bug in supervisorctl module, for a workaround see _vagrant/playbook.yml
 
-TODO: link to a bug report
-TODO: shortcut for this
+This is a bug in supervisorctl module, for a workaround see _vagrant/playbook.yml
+Proposed fix to this bug is here: https://github.com/ansible/ansible/pull/7980
 
 
 Example Playbook

@@ -24,6 +24,7 @@
         config: "{{ supervisord_configuration_file }}"
         name: example_daemon
         state: started
+      # Retry until it's really started
       register: r
       retries: 5
       delay: 1
