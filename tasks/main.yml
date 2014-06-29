@@ -4,6 +4,9 @@
 - name: Stop supervisor and disable the default init script
   service: name=supervisor enabled=no state=stopped
   when: supervisord_disable_distro_init | bool
+# TODO: a better workaround. Service always reports "changed" which breaks tests.
+# See https://github.com/ansible/ansible/pull/7977
+  changed_when: no
 
 - name: Prepare the log dir
   file: dest=/var/log/supervisor-{{ supervisord_instance_name }} state=directory
