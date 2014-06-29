@@ -27,7 +27,8 @@
 
   post_tasks:
     - meta: flush_handlers
-    - wait_for: port=1026
+
+    - wait_for: port=1026 delay=5
 
     # Make sure both programs are seen as started
     - supervisorctl:

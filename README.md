@@ -23,7 +23,7 @@ None of them are required, but you probably want to set ``supervisord_programs``
 
     supervisord_instance_name: "default"
 
-This name will be used in default paths and for init script names.
+This name will be used in default paths and for init script names (this will be the name of the created system service).
 If you need multiple supervisor daemons, that's how they are told apart.
 
 
@@ -40,6 +40,11 @@ Main log file location.
     supervisord_user: no
 
 Run supervisord as this user.
+
+
+    supervisord_kill_timeout: 60
+
+Time (in seconds) between sending SIGTERM and SIGKILL when stopping supervisord.
 
 
     supervisord_environment: {}

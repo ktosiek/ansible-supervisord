@@ -13,3 +13,5 @@ respawn limit 10 5
 console log
 
 exec /usr/bin/supervisord --nodaemon -c "{{ supervisord_configuration_file }}"
+
+kill timeout {{ supervisord_kill_timeout | default(60) }}
