@@ -1,4 +1,4 @@
-- name: restart {{ supervisord_instance_name }}
-  service: name={{ supervisord_instance_name }} state=restarted
 - name: reload {{ supervisord_instance_name }}
   service: name={{ supervisord_instance_name }} state=reloaded
+- name: restart {{ supervisord_instance_name }}
+  service: name={{ supervisord_instance_name }} state=restarted
